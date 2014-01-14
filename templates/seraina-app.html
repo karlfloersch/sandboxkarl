@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Herppy Berdey!</title>
+    <style>
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0px;
+        border: 0;
+        overflow: hidden; /*  Disable scrollbars */
+        display: block;  /* No floating content on sides */
+    }
+    </style>
+</head>
+
+<body>
+ <canvas id="myCanvas" style = 'position: absolute; left: 0px; top: 0px;' width="800", height="800"></canvas>
+ <script language="javascript" type="text/javascript">
+ "use strict";
+ <!-- Hide javascript
+            // INIT CANVAS
+            var canvas = document.getElementById('myCanvas');
+            var ctx = canvas.getContext('2d');
+            var cWidth = canvas.width;
+            var cHeight = canvas.height;
+            // INIT MOUSE
+            var mie = (navigator.appName == "Microsoft Internet Explorer")?true:false;
+            var mouseX = 0;
+            var mouseY = 0;
+            var mouseClick = 0;
+            // INIT REST
+            setup();
+            // END INIT
+
+            function setup()
+            {
+                //THIS MAY HAVE AN ERROR BECAUSE IN SETUP.  IF SO TAKE OUT OBVIOUSLY
+                if (!mie)
+                {
+                    document.captureEvents(Event.MOUSEMOVE); // Specifies that you want all mouse movement events passed to the document
+                    document.captureEvents(Event.MOUSEDOWN);
+                }
+
+                setInterval(update, 33);
+            }
+
+
+
+
+
+            function mousePos(e)
+            {
+                if (!mie) 
+                {
+                    mouseX = e.pageX;
+                    mouseY = e.pageY;
+                } 
+                else
+                {
+                    mouseX = event.clientX + document.body.scrollLeft;
+                    mouseY = event.clientY + document.body.scrollTop;
+                }
+                return true;
+            }
+
+            function update()
+            {
+                draw();
+
+                // Update stuff
+            }
+
+            function draw()
+            {
+                // Draw stuff
+            }
+
+
+
+
+
+
+            // function WorkerBee (name, dep, projs)
+            // {
+            //     Employee.call(this, name, dep);
+            //     this.projects = projs || [];
+            // }
+            // WorkerBee.prototype = new Employee;
+
+            // var karl = new WorkerBee("Karl", "CompSci", "Seriana's b-day gift");
+            // console.log(karl.name);
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // ********  ELEMENT CLASS: USED FOR MOST OBJECTS  ******** //
+            function Element (img, clickable, dragable, msg)
+            {
+                this.img = img;
+                this.clickable = clickable;
+                this.dragable = dragable;
+                this.msg = msg;
+
+            }
+            Element.prototype.update = function()
+            {
+                // TODO: fill out
+            }
+            Element.prototype.onClk = function()
+            {
+                console.log(this.msg + "was clicked.");
+            }
+            Element.prototype.onHvr = function()
+            {
+                console.log(this.msg + "is being hovered.");
+            }
+            Element.prototype.draw = function()
+            {
+                // TODO: draw
+            }
+            // ********            END ELEMENT CLASS            ******** //
+
+
+
+            -->
+            </script>
+            <noscript>
+                <h3>This site requires JavaScript</h3>
+            </noscript>
+
+        </body>
+
+        </html>

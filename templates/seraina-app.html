@@ -12,68 +12,298 @@
         display: block;  /* No floating content on sides */
     }
     </style>
-</head>
+    <script src="http://sandboxkarl.appspot.com/static/CanvasInput.js"></script>
 
-<body>
- <canvas id="myCanvas" style = 'position: absolute; left: 0px; top: 0px;' width="800", height="800"></canvas>
+</head>
+<h1>Seriana's Birthday Game!</h1><br>
+          
+
+ <canvas id="myCanvas" style="position: absolute; left: 0; top: 70; z-index: 0;" width="800", height="500" onclick="onClk()" onmousedown="onMouseDown()" onmouseup="onMouseUp()" onmouseout="onMouseUp()"></canvas>
  <script language="javascript" type="text/javascript">
  "use strict";
  <!-- Hide javascript
+            //STRING CONSTANTS
+            var lvl1PopupTitle = "Level 1 Complete!";
+            var lvl1PopupMessage = "I see you've gotten better at shape games since we last played them! Hit on that    continue button to go on to the next      level.  WARNING: It may be a little       harder...";
+            var lvl2PopupTitle = "Level 2 Complete!";
+            var lvl2PopupMessage = "Well well well... you're good, real good. But do you have what it takes to beat     level three? Oh, I'd like to see you try.";
+            var lvl3PopupTitle = "Level 3 Complete!";
+            var lvl3PopupMessage = "Wowzer! Ya dun did it! Yur 20! Er Ma Gerd!Happy birthday! Hope you have a great one!And just so you know... YOUR NOT DONE! Oh,you thought I'd let you off that easy? no way... not once not never. Get real. PRESSSSSS THEEEEEEE BUTTTOONNNNNN.";
+            var lvl4PopupTitle = "Last Lvl Complete!";
+            var lvl4PopupMessage = "???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????";
+
+
+
+
             // INIT CANVAS
             var canvas = document.getElementById('myCanvas');
             var ctx = canvas.getContext('2d');
             var cWidth = canvas.width;
             var cHeight = canvas.height;
             // INIT MOUSE
-            var mie = (navigator.appName == "Microsoft Internet Explorer")?true:false;
-            var mouseX = 0;
-            var mouseY = 0;
-            var mouseClick = 0;
+            var mousePos = {'x':0, 'y':0, 'ox':0, 'oy':0};
+            var mouseDown = false;
+            var isSelecting = false;
+            // INIT ARRAYS
+            var elements = new Array();
+            // INIT LEVEL RELATED THINGS
+            var currentLevel;
+            var currentPopup;
+            var isPaused = false;
+            var selectedElement;
+            // MISC
+            var path = "http://sandboxkarl.appspot.com/images/";
+            var popupImg = {'background': new Image(), 'button': new Image()};
+            var popupBackground;
+            var inputBox;
+            var balloonPopImage;
+            var balloonImage;
             // INIT REST
             setup();
             // END INIT
 
+
+
             function setup()
             {
-                //THIS MAY HAVE AN ERROR BECAUSE IN SETUP.  IF SO TAKE OUT OBVIOUSLY
-                if (!mie)
-                {
-                    document.captureEvents(Event.MOUSEMOVE); // Specifies that you want all mouse movement events passed to the document
-                    document.captureEvents(Event.MOUSEDOWN);
-                }
+                initLevelOne();
+                // initLevelFour();
+                // init popup background image for wide spread useage
+                popupImg.background.onload = function(){};
+                popupImg.background.src = path + "popupbg.png";
+                popupImg.button.onload = function(){};
+                popupImg.button.src = path + "buttonbackground.png"
 
                 setInterval(update, 33);
             }
 
-
-
-
-
-            function mousePos(e)
+            function initLevelOne()
             {
-                if (!mie) 
-                {
-                    mouseX = e.pageX;
-                    mouseY = e.pageY;
-                } 
-                else
-                {
-                    mouseX = event.clientX + document.body.scrollLeft;
-                    mouseY = event.clientY + document.body.scrollTop;
-                }
-                return true;
+                //LEVEL ONE UPDATE
+                currentLevel = new Level(function(){
+                    var numCorrect = 0;
+                    for(var i = 0, size = elements.length; i < size ; i++)
+                        if(elements[i] instanceof Block)
+                            if(elements[i].isCorrect)
+                                numCorrect += 1;
+                    if(numCorrect == 3 && !isPaused){
+                        isPaused = true;
+                        mouseDown = false;
+                        currentPopup = new Popup(lvl1PopupTitle, lvl1PopupMessage);
+                    }
+                },
+                //LEVEL ONE DRAW
+                function(){
+                    if(isPaused)
+                        if(currentPopup.draw()){
+                            initLevelTwo();
+                        }
+                });
+                addElement("level1bg.png", {'x':0,'y':0}, false);
+
+                addBlock("triangleblock.png", {'x':10,'y':10}, {'x':549,'y':189});
+                addBlock("squareblock.png", {'x':10,'y':190}, {'x':196,'y':187});
+                addBlock("circleblock.png", {'x':10,'y':350}, {'x':367,'y':180})
             }
 
+            function initLevelTwo()
+            {
+                elements = new Array();
+                currentPopup = new Popup(lvl2PopupTitle, lvl2PopupMessage);
+                //LEVEL TWO UPDATE
+                currentLevel = new Level(function(){
+                    
+                }, 
+                //LEVEL TWO DRAW
+                function(){
+                    if(!isPaused){
+                        inputBox.render();
+                    }
+                        
+                    if(!isPaused && currentPopup.drawAndUpdateButton("Submit", 340, 350)){
+                        if(inputBox.value() == '19'){
+                            isPaused = true;
+                            mouseDown = false;
+                        }else{
+                            inputBox.value("");
+                        }
+                    }
+                    if(isPaused){
+                        if(currentPopup.draw()){
+                            initLevelThree();
+                            isPaused = false;
+                            inputBox.value("");
+                        }
+                    }
+                });
+                currentLevel.enterPressed = false;
+                currentLevel.enterText = "";
+
+                isPaused = false;
+                addElement("level2bg.jpg", {'x':0,'y':0}, false);
+
+                inputBox = new CanvasInput({
+                    x: 330,
+                    y: 400,
+                    canvas: canvas
+                });
+                //REMOVED MOUSEUP BECAUSE IT WAS CAUSING A GLITCH
+                inputBox.mouseup = function(){};// WARNING THIS IS A HACK
+                //WARRRRRRRRRRRRNNNNNNNNNNNINNNNNNNNGGGGGGG
+            }
+
+
+            function initLevelThree()
+            {
+                elements = new Array();
+                currentPopup = new Popup(lvl3PopupTitle, lvl3PopupMessage);
+                
+                //LEVEL THREE UPDATE
+                currentLevel = new Level(function(){
+                    
+                }, 
+                //LEVEL THREE DRAW
+                function(){
+                    if(!isPaused){
+                        inputBox.render();
+                    }
+
+                    if(!isPaused && currentPopup.drawAndUpdateButton("Submit", 340, 450)){
+                        if(inputBox.value() == '20'){
+                            isPaused = true;
+                            mouseDown = false;
+                        }else if(inputBox.value().toLowerCase() == 'nuts'){
+                            inputBox.value("You must be nuts!");
+                            mouseDown = false;
+                        }
+                        else
+                            inputBox.value("");
+                    }
+                    if(isPaused){
+                        if(currentPopup.draw()){
+                            initLevelFour();
+                            isPaused = false;
+                        }
+                    }
+                });
+
+                addElement("level3bg.jpg", {'x':0,'y':0}, false);
+
+                addElement("two1.png", {'x':130,'y':10}, true, false, false);
+                addElement("two2.png", {'x':450,'y':200}, true, true, true);
+                addElement("two3.png", {'x':600,'y':30}, true, true, true);
+                addElement("two4.png", {'x':20,'y':300}, true, true, true);
+                addElement("two5.png", {'x':120,'y':100}, true, true, true);
+
+                addElement("zero1.png", {'x':400,'y':10}, true, false, false);
+                addElement("zero2.png", {'x':30,'y':100}, true, true, true);
+                addElement("zero3.png", {'x':150,'y':270}, true, true, true);
+                addElement("zero4.png", {'x':700,'y':300}, true, true, true);
+            }
+
+
+            var makeBalloons = false;
+            var balloonCounter = 1;
+            var nextBalloonTiming = 500;
+            var poppedBalloonCount = 0;
+            function initLevelFour()
+            {
+                elements = new Array();
+                currentPopup = new Popup(lvl4PopupTitle, lvl4PopupMessage);
+                isPaused = false;
+                //LEVEL FOUR UPDATE
+                currentLevel = new Level(function(){
+
+                    if(makeBalloons && balloonCounter % nextBalloonTiming == 0){
+                        addBalloon();
+                        nextBalloonTiming = getRandomInt(0, 300);
+                    }
+                    balloonCounter += 1;
+
+                    if(poppedBalloonCount >= 20){
+                        isPaused = true;
+                    }
+                }, 
+                //LEVEL FOUR DRAW
+                function(){
+                    if(poppedBalloonCount != 0){
+                        ctx.font="20px Arial";
+                        ctx.fillText(poppedBalloonCount,10,30);
+                    }
+                    if(isPaused){
+                        if(currentPopup.draw()){
+                            initSecretLevel();
+                            isPaused = false;
+                        }
+                    }
+                });
+                balloonPopImage = new Image();
+                balloonPopImage.onload = function(){};
+                balloonPopImage.src = path + "balloonpop.png";
+
+                balloonImage = new Image();
+                balloonImage.onload = function(){makeBalloons = true;};
+                balloonImage.src = path + "balloon.png";
+
+                
+                addElement("endtext.png", {'x':50,'y':20}, true);
+                addElement("level4bg.jpg", {'x':0,'y':0}, false);
+
+            }
+
+            function initSecretLevel()
+            {
+                elements = new Array();
+                currentPopup = new Popup(lvl1PopupTitle, lvl1PopupMessage);
+                
+                //LEVEL FOUR UPDATE
+                currentLevel = new Level(function(){
+                    
+                }, 
+                //LEVEL FOUR DRAW
+                function(){
+                    
+                });
+                
+                // addElement("endtext.png", {'x':50,'y':20}, true);
+                addElement("secretlvl.png", {'x':0,'y':0}, false);
+
+            }
+
+
+            var uCount = 0;
             function update()
             {
-                draw();
+                currentLevel.update();
 
-                // Update stuff
+                if(selectedElement){
+                    selectedElement.pos.x += (mousePos.x - mousePos.ox);
+                    selectedElement.pos.y += (mousePos.y - mousePos.oy);
+                }
+
+
+                uCount = elements.length;
+                while(uCount--) {
+                    elements[uCount].update();
+                }
+
+
+                mousePos.ox = (mousePos.x);
+                mousePos.oy = (mousePos.y);
+                draw();
             }
 
+            var dCount = 0, dmax;
             function draw()
             {
-                // Draw stuff
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                dCount = elements.length;
+
+                for (dCount = 0, dmax = elements.length; dCount < dmax; dCount++) {
+                    elements[dCount].draw();
+                }
+
+                currentLevel.draw();
             }
 
 
@@ -81,63 +311,310 @@
 
 
 
-            // function WorkerBee (name, dep, projs)
-            // {
-            //     Employee.call(this, name, dep);
-            //     this.projects = projs || [];
-            // }
-            // WorkerBee.prototype = new Employee;
-
-            // var karl = new WorkerBee("Karl", "CompSci", "Seriana's b-day gift");
-            // console.log(karl.name);
 
 
+            // ********  POPUP CLASS: USED FOR MAKING POPUPS ******** //
+            function Popup(title, message)
+            {
+                this.title = title;
+                this.message = message;
+            }
+            Popup.prototype.draw = function()
+            {
+                // 42 chars fill up the row
+                ctx.drawImage(popupImg.background, 150, 50);
+                ctx.font="30px Courier New";
+                ctx.fillText(this.title,250,130);
+                ctx.font="15px Courier New";
+                for(var i = 0, size = this.message.length; i < size ; i+=42){
+                    ctx.fillText(this.message.substr(i,42),200,160 + i/2);
+                }
+                return this.drawAndUpdateButton("Continue", 300, 300);
+            }
+            Popup.prototype.drawAndUpdateButton = function(text, xPos, yPos)
+            {
+                var length = text.length;
+                var popupWidth = length * 24;
+                var popupHeight = 38;
+                ctx.drawImage(popupImg.button, xPos, yPos, popupWidth, popupHeight);
+                ctx.font="30px Courier New";
+                ctx.fillText(text, xPos + 20, yPos + 25);
+
+                if(mouseDown){
+                    if(mousePos.x > xPos && mousePos.x < xPos + popupWidth ){
+                        if(mousePos.y > yPos && mousePos.y < yPos + popupHeight){
+                            return true;
+                        }
+                    }
+                }
+                return false;
+
+            }
+            // ^^^^^^^^  LEVEL POPUP: USED FOR MAKING POPUPS ^^^^^^^^ //
 
 
 
 
 
+            // ********  LEVEL CLASS: USED FOR ORGANIZING LEVELS ******** //
+            function Level(update, draw)
+            {
+                this.update = update;
+                this.draw = draw;
+            }
+            // ^^^^^^^^  LEVEL CLASS: USED FOR ORGANIZING LEVELS ^^^^^^^^ //
 
 
 
 
-
+            function selectElement(element)
+            {
+                isSelecting = true;
+                selectedElement = element;
+                var index = elements.indexOf(element);
+                if(index > -1){
+                    elements.splice(index, 1);
+                    elements.push(element);
+                }
+            }
 
             // ********  ELEMENT CLASS: USED FOR MOST OBJECTS  ******** //
-            function Element (img, clickable, dragable, msg)
+            function Element (img, pos, clickable, dragable, msg)
             {
                 this.img = img;
-                this.clickable = clickable;
-                this.dragable = dragable;
-                this.msg = msg;
-
+                this.pos = pos;
+                this.clickable = clickable || false;
+                this.dragable = dragable || false;
+                this.msg = msg || "";
+                this.hvr = false;
             }
             Element.prototype.update = function()
             {
-                // TODO: fill out
+                if(mousePos.x > this.pos.x && mousePos.x < this.pos.x + this.img.width){
+                    if(mousePos.y > this.pos.y && mousePos.y < this.pos.y + this.img.height){
+                        this.hvr = true;
+                        this.onHvr();
+                    }else
+                        this.hvr = false;
+                }else
+                    this.hvr = false;
+                this.hook();
             }
-            Element.prototype.onClk = function()
+            Element.prototype.onMouseDown = function()
             {
-                console.log(this.msg + "was clicked.");
+                if(this.hvr && !isSelecting){
+                    if(this.dragable || this.clickable){
+                        selectElement(this);
+                    }
+                }
             }
             Element.prototype.onHvr = function()
             {
-                console.log(this.msg + "is being hovered.");
+            }
+            Element.prototype.hook = function()
+            {
             }
             Element.prototype.draw = function()
             {
-                // TODO: draw
+                ctx.drawImage(this.img, this.pos.x, this.pos.y);
+            }
+            function addElement(imgSrc, pos, push, clickable, dragable, msg)
+            {
+                var img = new Image();
+                img.onload = function(){
+                    if (push)
+                        elements.push(new Element(img, pos, clickable, dragable, msg));
+                    else
+                        elements.unshift(new Element(img, pos, clickable, dragable, msg));
+                };
+                img.src = path + imgSrc;
             }
             // ********            END ELEMENT CLASS            ******** //
 
 
 
+
+
+
+
+
+
+
+            // **********  INPUT INTERPRETATION FUNCTIONS  ********** //
+            function onClk()
+            {
+                // TODO: Make this call the onClk methods in the objects
+            }
+            var cCount = 0;
+            function onMouseDown()
+            {
+                mouseDown = true;
+                if(!isPaused){
+                    cCount = elements.length;
+                    while(cCount--) {
+                        elements[cCount].onMouseDown();
+                    }
+                }
+            }
+            function onMouseUp()
+            {
+                selectedElement = null;
+                isSelecting = false;
+                mouseDown = false;
+            }
+
+            // ******** UPDATES mousePos WHENEVER MOUSE IS MOVED ******** //
+            function getMousePos(canvas, evt) 
+            {
+                var rect = canvas.getBoundingClientRect();
+                return {
+                  x: Math.round((evt.clientX-rect.left)/(rect.right-rect.left)*canvas.width),
+                  y: Math.round((evt.clientY-rect.top)/(rect.bottom-rect.top)*canvas.height)
+              };
+            }
+
+            var mp;
+            canvas.addEventListener('mousemove', function(evt) {
+                mp = getMousePos(canvas, evt);
+                mousePos.x = mp.x;
+                mousePos.y = mp.y;
+            }, false);
+            // ******* END UPDATES mousePos WHENEVER MOUSE IS MOVED ******* //
+
+            // ^^^^^^^^^^  INPUT INTERPRETATION FUNCTIONS  ^^^^^^^^^^ //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // ********  BALLOON CLASS: MAKES BALLOONS FOR LAST LVL  ******** //
+            function Balloon (img, pos)
+            {
+                Element.call(this, img, pos, false, false, "");
+                this.pos = pos;
+                this.incrementor = 0;
+                this.frameCounter = 0;
+                this.isPopped = false;
+            }
+            Balloon.prototype = new Element;
+            Balloon.prototype.hook = function()
+            {
+                if(!this.isPopped){
+                    this.pos.y -= 3 + .5*Math.sin(this.incrementor+=.2);
+                    this.pos.x = this.pos.x + Math.sin(this.incrementor+=.1);
+                    if(mouseDown){
+                        if(mousePos.x > this.pos.x && mousePos.x < this.pos.x + this.img.width){
+                            if(mousePos.y > this.pos.y && mousePos.y < this.pos.y + this.img.height*.40){
+                                this.popBalloon();
+                                if(!isPaused)
+                                    poppedBalloonCount ++;
+                            }
+                        }
+                    }
+                    if(this.pos.y < -400){
+                        this.popBalloon();
+
+                    }
+                }else{
+                    this.frameCounter ++;
+                    if(this.frameCounter > 5){
+                        var index = elements.indexOf(this);
+                        if(index > -1){
+                            elements.splice(index, 1);
+                        }    
+                    }
+                }
+            }
+            Balloon.prototype.popBalloon = function()
+            {
+                this.img = balloonPopImage;
+                this.isPopped = true;
+                this.pos.x -= 30;
+                
+            }
+            function addBalloon()
+            {
+                // var img = new Image();
+                var pos = {'x': getRandomInt(0, 709), 'y': 500};
+                // img.onload = function(){elements.push(new Balloon(img, pos))};
+                // img.src = path + "balloon.png";
+                elements.push(new Balloon(balloonImage, pos));
+            }
+            // ^^^^^^^^  BALLOON CLASS: MAKES BALLOONS FOR LAST LVL  ^^^^^^^^ //
+
+            function getRandomInt (min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+
+
+            // ********  BLOCK CLASS: USED FOR LEVEL ONE BLOCKS  ******** //
+            function Block (img, pos, endPos)
+            {
+                Element.call(this, img, pos, true, true, "");
+                this.endPos = endPos;
+                this.isCorrect = false;
+
+            }
+            Block.prototype = new Element;
+            Block.prototype.hook = function()
+            {
+                if(Math.abs(this.pos.x - this.endPos.x) < 10){
+                    if(Math.abs(this.pos.y - this.endPos.y) < 10){
+                        this.pos.x = this.endPos.x;
+                        this.pos.y = this.endPos.y;
+                        this.isCorrect = true;
+                        return;
+                    }
+                }
+                this.isCorrect = false;
+            }
+            function addBlock(imgSrc, pos, endPos)
+            {
+                var img = new Image();
+                img.onload = function(){elements.push(new Block(img, pos, endPos))};
+                img.src = path + imgSrc;
+            }
+            // ^^^^^^^^  BLOCK CLASS: USED FOR LEVEL ONE BLOCKS  ^^^^^^^^ //
+
+
+
+
+
+            //MOUSEUP HACK!!! THIS IS SO STUPID DONT LOOK!
+            var mouseupHack = function(e, self) {
+                var mouse = self._mousePos(e),
+                x = mouse.x,
+                y = mouse.y;
+
+                // update selection if a drag has happened
+                var isSelection = self._clickPos(x, y) !== self._selectionStart;
+                if (self._hasFocus && self._selectionStart >= 0 && self._overInput(x, y) && isSelection) {
+                    self._selectionUpdated = true;
+                    delete self._selectionStart;
+                    self.render();
+                } else {
+                    delete self._selectionStart;
+                }
+
+                self.click(e, self);
+            }
+            
             -->
             </script>
             <noscript>
                 <h3>This site requires JavaScript</h3>
             </noscript>
-
         </body>
 
         </html>

@@ -32,8 +32,8 @@ class MainHandler(webapp2.RequestHandler):
 
 class SerainaHandler(webapp2.RequestHandler):
     def get(self):
-        template = main.jinja_environment.get_template('seraina-app.html')
-		self.response.out.write(template.render())
+        template = jinja_auto.get_template('seraina-app.html')
+        self.response.out.write(template.render())
 
 
 

@@ -36,10 +36,14 @@ class SerainaHandler(webapp2.RequestHandler):
         self.response.out.write(template.render())
 
 
-
+class VideoHandler(webapp2.RequestHandler):
+    def get(self):
+        template = jinja_auto.get_template('test-video.html')
+        self.response.out.write(template.render())
 
         
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/serainasbday', SerainaHandler)
+    ('/serainasbday', SerainaHandler),
+    ('/videotest', VideoHandler)
 ], debug=True)
